@@ -1,18 +1,27 @@
 
 import { useEffect, useState } from "react";
-import ActivityFeed from "../components/ActivityFeed";
 import {
     FolderKanban,
     ListTodo,
     Clock,
     CheckCircle,
-    AlertTriangle
+    AlertTriangle,
+    Activity
 } from "lucide-react";
 
+import ActivityFeed from "../components/ActivityFeed";
 import api from "../services/api";
 
-function Dashboard() {
+const DASHBOARD_CARDS = [
+    ["Total Projects", "totalProjects", FolderKanban, "purple"],
+    ["Total Issues", "totalIssues", ListTodo, "blue"],
+    ["Open Issues", "openIssues", Clock, "orange"],
+    ["In Progress", "inProgressIssues", Activity, "cyan"],
+    ["Completed", "completedIssues", CheckCircle, "green"],
+    ["High Priority", "highPriorityIssues", AlertTriangle, "red"]
+];
 
+function Dashboard() {
     const [stats, setStats] = useState({
         totalProjects: 0,
         totalIssues: 0,
@@ -25,101 +34,91 @@ function Dashboard() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-
         const fetchStats = async () => {
             try {
                 const res = await api.get("/dashboard/stats");
                 setStats(res.data);
             } catch (error) {
-                console.log(error);
+                console.error("Failed to fetch dashboard stats:", error);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchStats();
-
     }, []);
 
-    const cards = [
-        {
-            title: "Total Projects",
-            value: stats.totalProjects,
-            icon: FolderKanban
-        },
-        {
-            title: "Total Issues",
-            value: stats.totalIssues,
-            icon: ListTodo
-        },
-        {
-            title: "Open Issues",
-            value: stats.openIssues,
-            icon: Clock
-        },
-        {
-            title: "In Progress",
-            value: stats.inProgressIssues,
-            icon: AlertTriangle
-        },
-        {
-            title: "Completed",
-            value: stats.completedIssues,
-            icon: CheckCircle
-        },
-        {
-            title: "High Priority",
-            value: stats.highPriorityIssues,
-            icon: AlertTriangle
-        }
-    ];
-
-    if (loading) return <p>Loading dashboard...</p>;
+    if (loading) {
+        return (
+            <div className="dashboard-loading">
+                Loading dashboard...
+            </div>
+        );
+    }
 
     return (
         <div className="dashboard">
 
-            <div className="page-heading">
+            <div className="dashboard-heading">
                 <div>
                     <h1>Dashboard</h1>
-                    <p>Here's what's happening in your workspace.</p>
+                    <p>
+                        Welcome back! Here's what's happening
+                        in your workspace.
+                    </p>
                 </div>
             </div>
 
-            <div className="stats-grid">
-
-                {cards.map((card, index) => {
-                    const Icon = card.icon;
+            <section className="stats-grid">
+                {DASHBOARD_CARDS.map(([title, stat, Icon, color]) => {
 
                     return (
-                        <div className="stat-card" key={index}>
-
-                            <div className="stat-icon">
-                                <Icon size={22} />
+                        <div className="stat-card" key={title}>
+                            <div className={`stat-icon ${color}`}>
+                                <Icon size={21} />
                             </div>
 
-                            <p>{card.title}</p>
-
-                            <h2>{card.value}</h2>
-
+                            <div className="stat-info">
+                                <p>{title}</p>
+                                <h2>{stats[stat]}</h2>
+                            </div>
                         </div>
                     );
                 })}
+            </section>
 
-            </div>
+            <section className="dashboard-bottom">
+                <div className="activity-card">
+                    <div className="section-heading">
+                        <div>
+                            <h2>Recent Activity</h2>
+                            <p>Latest updates from your workspace</p>
+                        </div>
+                        <Activity size={21} />
+                    </div>
 
-            <div className="welcome-card">
-                <h2>Welcome to SprintBoard</h2>
-                <p>
-                    Organize your projects, track issues,
-                    and monitor your team's progress.
-                </p>
-            </div>
+                    <div className="activity-content">
+                        <ActivityFeed />
+                    </div>
+                </div>
+
+                <div className="welcome-card">
+                    <div className="welcome-icon">
+                        <FolderKanban size={25} />
+                    </div>
+
+                    <h2>Welcome to SprintBoard</h2>
+
+                    <p>
+                        Organize your projects, manage issues,
+                        and keep track of your team's progress
+                        from one place.
+                    </p>
+                </div>
+            </section>
 
         </div>
     );
-    
 }
 
 export default Dashboard;
-<ActivityFeed />

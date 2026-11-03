@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Folder, Trash2 } from "lucide-react";
 
@@ -13,20 +13,20 @@ function Projects() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-    const fetchProjects = async () => {
+    const fetchProjects = useCallback(async () => {
         try {
             const res = await api.get("/projects");
             setProjects(res.data);
-        } catch (error) {
+        } catch {
             setError("Unable to load projects");
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
-        fetchProjects();
-    }, []);
+        queueMicrotask(fetchProjects);
+    }, [fetchProjects]);
 
     const createProject = async (e) => {
         e.preventDefault();
@@ -57,7 +57,7 @@ function Projects() {
         try {
             await api.delete(`/projects/${id}`);
             fetchProjects();
-        } catch (error) {
+        } catch {
             setError("Unable to delete project");
         }
     };

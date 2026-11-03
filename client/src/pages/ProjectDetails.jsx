@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import api from "../services/api";
@@ -14,26 +14,41 @@ function ProjectDetails() {
     const [description, setDescription] = useState("");
     const [priority, setPriority] = useState("medium");
     const [error, setError] = useState("");
+    const [activities, setActivities] = useState([]);
 
-    const fetchData = async () => {
-
+    const fetchData = useCallback(async () => {
         try {
-            const [projectRes, issueRes] = await Promise.all([
+            const [
+                projectRes,
+                issueRes,
+                activityRes
+            ] = await Promise.all([
+
                 api.get(`/projects/${id}`),
-                api.get(`/issues?project=${id}`)
+
+                api.get(`/issues?project=${id}`),
+
+                api.get(`/activities?project=${id}`)
+
             ]);
 
             setProject(projectRes.data);
             setIssues(issueRes.data);
+            setActivities(activityRes.data);
+
+            setError("");
 
         } catch (error) {
-            setError("Unable to load project");
+            setError(
+                error.response?.data?.message ||
+                "Unable to load project"
+            );
         }
-    };
+    }, [id]);
 
     useEffect(() => {
-        fetchData();
-    }, [id]);
+        queueMicrotask(fetchData);
+    }, [fetchData]);
 
     const createIssue = async (e) => {
         e.preventDefault();
@@ -60,7 +75,7 @@ function ProjectDetails() {
         try {
             await api.put(`/issues/${issueId}`, { status });
             fetchData();
-        } catch (error) {
+        } catch {
             setError("Unable to update issue");
         }
     };
@@ -72,7 +87,7 @@ function ProjectDetails() {
         try {
             await api.delete(`/issues/${issueId}`);
             fetchData();
-        } catch (error) {
+        } catch {
             setError("Unable to delete issue");
         }
     };
@@ -157,6 +172,68 @@ function ProjectDetails() {
             </div>
 
             {issues.length === 0 && <p>No issues in this project.</p>}
+
+
+            {/* RECENT ACTIVITY */}
+
+            <div className="activity-section">
+
+                <div className="activity-heading">
+                    <div>
+                        <h2>Recent Activity</h2>
+                        <p>Latest updates in this project</p>
+                    </div>
+                </div>
+
+                {activities.length === 0 ? (
+
+                    <p className="empty-activity">
+                        No recent activity yet.
+                    </p>
+
+                ) : (
+
+                    <div className="activity-timeline">
+
+                        {activities.map(activity => (
+
+                            <div
+                                className="activity-item"
+                                key={activity._id}
+                            >
+
+                                <div className="activity-dot"></div>
+
+                                <div className="activity-content">
+
+                                    <h4>
+                                        {activity.userId?.name || "User"}
+                                    </h4>
+
+                                    <p>{activity.action}</p>
+
+                                    <small>
+                                        Issue: {activity.issueId?.title || "Unavailable"}
+                                    </small>
+
+                                    <small>
+                                        {new Date(
+                                            activity.createdAt
+                                        ).toLocaleString()}
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+                        ))}
+
+                    </div>
+
+                )}
+
+            </div>
+
 
         </div>
     );

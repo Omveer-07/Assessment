@@ -1,6 +1,4 @@
 
-import { Bell, Search } from "lucide-react";
-
 function Navbar() {
 
     const user = JSON.parse(

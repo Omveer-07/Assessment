@@ -43,7 +43,7 @@ export const createIssue = async (req, res) => {
             createdBy: req.user.id
         });
 
-        // Activity log
+        // Create activity record
         await Activity.create({
             userId: req.user.id,
             issueId: issue._id,
