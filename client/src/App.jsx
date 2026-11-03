@@ -15,36 +15,39 @@ import Issues from "./pages/Issues";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
+import { ThemeProvider } from "./context/ThemeContext.jsx";
 
 function App() {
 
     return (
-        <BrowserRouter>
+        <ThemeProvider>
+            <BrowserRouter>
 
-            <Routes>
+                <Routes>
 
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
 
-                <Route element={<ProtectedRoute />}>
+                    <Route element={<ProtectedRoute />}>
 
-                    <Route element={<Layout><Dashboard /></Layout>}>
-                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route element={<Layout><Dashboard /></Layout>}>
+                            <Route path="/dashboard" element={<Dashboard />} />
+                        </Route>
+
+                        <Route path="/projects" element={<Layout><Projects /></Layout>} />
+
+                        <Route path="/projects/:id" element={<Layout><ProjectDetails /></Layout>} />
+
+                        <Route path="/issues" element={<Layout><Issues /></Layout>} />
+
                     </Route>
 
-                    <Route path="/projects" element={<Layout><Projects /></Layout>} />
+                    <Route path="/" element={<Navigate to="/dashboard" />} />
 
-                    <Route path="/projects/:id" element={<Layout><ProjectDetails /></Layout>} />
+                </Routes>
 
-                    <Route path="/issues" element={<Layout><Issues /></Layout>} />
-
-                </Route>
-
-                <Route path="/" element={<Navigate to="/dashboard" />} />
-
-            </Routes>
-
-        </BrowserRouter>
+            </BrowserRouter>
+        </ThemeProvider>
     );
 }
 
